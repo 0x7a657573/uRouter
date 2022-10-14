@@ -12,6 +12,6 @@ Realize low-cost "medium-high-speed" Internet access.It is also equipped with a 
 * Status led indicator
 * Statistics for Usage traffic
 
-## Log Veiw
-This Project use [zMonitor](https://github.com/0x7a657573/zMonitor) For loginig.
+## Log View
+This Project uses [zMonitor](https://github.com/0x7a657573/zMonitor) For logging.
 > zMonitor is multi platform and open-source helpful logging software for embedded devices written in QT and 

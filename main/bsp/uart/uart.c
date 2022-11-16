@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  **********************************************************************/
+#include <string.h>
 #include "driver/uart.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
@@ -33,6 +34,15 @@ bool xuart_init(Serialport_t port,SerialBaud_t baud)
 {
 /* Configure parameters of an UART driver,
      * communication pins and install the driver */
+    uart_config_t first_uart_config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .source_clk = UART_SCLK_APB,
+    };
+
     uart_config_t uart_config = {
         .baud_rate = (int)baud,
         .data_bits = UART_DATA_8_BITS,
@@ -53,9 +63,18 @@ bool xuart_init(Serialport_t port,SerialBaud_t baud)
     }
 
     ESP_ERROR_CHECK(uart_driver_install((uart_port_t)port,uRXFifo[port],uTXFifo[port],0,NULL,intr_alloc_flags));
-    ESP_ERROR_CHECK(uart_param_config((uart_port_t)port, &uart_config));
+    ESP_ERROR_CHECK(uart_param_config((uart_port_t)port, &first_uart_config));
     ESP_ERROR_CHECK(uart_set_pin((uart_port_t)port, uTXGpio[port], uRXGpio[port], UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
 
+    char tmp[20];
+    sprintf(tmp,"AT+IPR=%d\r\n",baud);
+    vTaskDelay(500);
+    uart_write_bytes((uart_port_t)port,tmp, strlen(tmp));
+    vTaskDelay(200);
+    ESP_ERROR_CHECK(uart_param_config((uart_port_t)port, &uart_config));
+    uart_write_bytes((uart_port_t)port,"AT&W\r\n", 15);
+    vTaskDelay(200);
+    
     return true;
 }
 
